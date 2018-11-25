@@ -157,6 +157,18 @@ namespace ClassicUO.Network
             return sb.ToString();
         }
 
+        public string ReadUTF8String()
+        {
+            StringBuffer sb = new StringBuffer();
+
+            char c;
+            while ( ( c = (char)ReadByte() ) != '\0' ) sb.Append( c );
+
+
+            return sb.ToString();
+        }
+
+
         public byte[] ReadArray(int count)
         {
             EnsureSize(count);

@@ -53,6 +53,8 @@ namespace ClassicUO.Game.Gumps.Controls
             SetText(lines[int.Parse(parts[7])]);
         }
 
+        public bool IsChanged => _entry.IsChanged;
+
         public Hue Hue
         {
             get => _entry.Hue;
@@ -71,7 +73,7 @@ namespace ClassicUO.Game.Gumps.Controls
 
         public bool ReplaceDefaultTextOnFirstKeyPress { get; set; }
 
-        public string Text => _entry.Text;
+        public string Text { get { return _entry.Text; } set { SetText( value ); } }
 
         public int LinesCount => _entry.GetLinesCount();
 

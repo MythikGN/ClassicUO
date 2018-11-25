@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>ClassicUO</RootNamespace>
     <AssemblyName>ClassicUO</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
@@ -90,6 +90,8 @@
     <Compile Include="Game\GameObjects\MovingEffect.cs" />
     <Compile Include="Game\Gumps\Controls\HitBox.cs" />
     <Compile Include="Game\Gumps\Controls\Line.cs" />
+    <Compile Include="Game\Gumps\Controls\MultiLineTextBox.cs" />
+    <Compile Include="Game\Gumps\UIGumps\BookGump.cs" />
     <Compile Include="Game\Gumps\UIGumps\BuffGump.cs" />
     <Compile Include="Game\Gumps\Controls\Combobox.cs" />
     <Compile Include="Game\Gumps\Controls\HoveredLabel.cs" />
