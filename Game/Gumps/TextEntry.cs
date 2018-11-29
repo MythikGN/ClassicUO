@@ -61,6 +61,7 @@ namespace ClassicUO.Game.Gumps
         public int MaxCharCount { get; }
 
         public int Width { get; }
+        public int Height => RenderText.Height;
 
         public int MaxWidth { get; }
 
@@ -97,6 +98,8 @@ namespace ClassicUO.Game.Gumps
             }
         }
 
+        public int MaxLines { get; internal set; }
+
         public void Dispose()
         {
             RenderText?.Dispose();
@@ -129,8 +132,10 @@ namespace ClassicUO.Game.Gumps
                 }
                 else if (Text.Length >= MaxCharCount) return;
             }
-
             string text = Text.Insert(CaretIndex, c);
+            var newlines = GetLinesCount( text );
+            if ( newlines > MaxLines )
+                return;
             CaretIndex += c.Length;
             SetText(text);
         }
@@ -260,7 +265,10 @@ namespace ClassicUO.Game.Gumps
         {
             return RenderText.IsUnicode ? Fonts.GetLinesCountUnicode(RenderText.Font, RenderText.Text, RenderText.Align, (ushort) RenderText.FontStyle, Width) : Fonts.GetLinesCountASCII(RenderText.Font, RenderText.Text, RenderText.Align, (ushort) RenderText.FontStyle, Width);
         }
-
+        public int GetLinesCount(string text)
+        {
+            return RenderText.IsUnicode ? Fonts.GetLinesCountUnicode( RenderText.Font, text, RenderText.Align, (ushort)RenderText.FontStyle, Width ) : Fonts.GetLinesCountASCII( RenderText.Font, text, RenderText.Align, (ushort)RenderText.FontStyle, Width );
+        }
         public void Clear()
         {
             Text = string.Empty;

@@ -1038,9 +1038,9 @@ namespace ClassicUO.Network
                 for(int x = 0; x < lineCnt;x++ )
                 {
                     if ( gump.IsNewBookD4 )
-                        lines.Add( p.ReadUTF8String() );
+                        lines.Add( p.ReadUTF8String().Replace("\n","") );
                     else
-                        lines.Add( p.ReadASCII() );
+                        lines.Add( p.ReadASCII().Replace( "\n", "" ) );
                 }
                 pages.Add( pageNum, lines );
                

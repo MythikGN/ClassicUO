@@ -32,6 +32,8 @@ namespace ClassicUO.Game.Gumps.Controls
 {
     public class TextBox : GumpControl
     {
+
+        public bool MultiLineInputAllowed { get; set; } = false;
         private TextEntry _entry;
         private bool _showCaret;
 
@@ -81,6 +83,8 @@ namespace ClassicUO.Game.Gumps.Controls
 
         public override bool AcceptKeyboardInput => base.AcceptKeyboardInput && IsEditable;
 
+        public int MaxLines { get => _entry.MaxLines; set => _entry.MaxLines = value; }
+
         public void SetText(string text, bool append = false)
         {
             if (append)
@@ -91,6 +95,7 @@ namespace ClassicUO.Game.Gumps.Controls
 
         public override void Update(double totalMS, double frameMS)
         {
+            Height = _entry.Height;
             if (UIManager.KeyboardFocusControl == this)
             {
                 if (!IsFocused)
@@ -139,6 +144,8 @@ namespace ClassicUO.Game.Gumps.Controls
                         _entry.InsertString("    ");
                     break;*/
                 case SDL.SDL_Keycode.SDLK_RETURN:
+                    if ( MultiLineInputAllowed )
+                        _entry.InsertString( "\n" );
                     //if ((_entry.RenderText.FontStyle & FontStyle.Fixed) == 0)
                     //    _entry.InsertString("\n");
                     //else
@@ -146,7 +153,7 @@ namespace ClassicUO.Game.Gumps.Controls
 
                     break;
                 case SDL.SDL_Keycode.SDLK_BACKSPACE:
-
+                    //TODO remove from current ccaret index
                     if (ReplaceDefaultTextOnFirstKeyPress)
                         ReplaceDefaultTextOnFirstKeyPress = false;
                     else
