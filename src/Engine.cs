@@ -463,7 +463,7 @@ namespace ClassicUO
 
             Log.Message(LogTypes.Trace, "Loading plugins...");
             Log.PushIndent();
-            Plugin.Create(@".\Assistant\Razor.dll");
+            Plugin.Create(@"./Assistant/Razor.dll");
             Log.Message(LogTypes.Trace, "Done!");
             Log.PopIndent();
 

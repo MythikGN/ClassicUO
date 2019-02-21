@@ -91,28 +91,7 @@ namespace ClassicUO.Network
             _getStaticImage = GetStaticImage;
             _getUoFilePath = GetUOFilePath;
 
-            IntPtr assptr = SDL2EX.SDL_LoadObject(_path);
-
-            Log.Message(LogTypes.Trace, $"assembly: {assptr}");
-
-            if (assptr == IntPtr.Zero)
-            {
-                Log.Message(LogTypes.Error, "Invalid assemlby.");
-                return;
-            }
-
-            Log.Message(LogTypes.Trace, $"Searching for 'Install' entry point  -  {assptr}");
-
-            IntPtr installPtr = SDL2EX.SDL_LoadFunction(assptr, "Install");
-
-            Log.Message(LogTypes.Trace, $"Entry point: {installPtr}");
-
-            if (installPtr == IntPtr.Zero)
-            {
-                Log.Message(LogTypes.Error, "Invalid entry point.");
-                return;
-            }
-
+            
 
             //IntPtr headerPtr = Marshal.AllocHGlobal(4 + 8 * 18); // 256 ?
             //Marshal.WriteInt32(headerPtr, (int)FileManager.ClientVersion);
@@ -146,8 +125,60 @@ namespace ClassicUO.Network
                 GetUOFilePath = Marshal.GetFunctionPointerForDelegate(_getUoFilePath)
             };
 
-            void* func = &header;          
-            Marshal.GetDelegateForFunctionPointer<OnInstall>(installPtr)(ref func);
+            void* func = &header;
+            if (Environment.OSVersion.Platform != PlatformID.Unix)
+            {
+                IntPtr assptr = SDL2EX.SDL_LoadObject(_path);
+
+                Log.Message(LogTypes.Trace, $"assembly: {assptr}");
+
+                if (assptr == IntPtr.Zero)
+                {
+                    Log.Message(LogTypes.Error, "Invalid assemlby.");
+                    return;
+                }
+
+                Log.Message(LogTypes.Trace, $"Searching for 'Install' entry point  -  {assptr}");
+
+                IntPtr installPtr = SDL2EX.SDL_LoadFunction(assptr, "Install");
+
+                Log.Message(LogTypes.Trace, $"Entry point: {installPtr}");
+
+                if (installPtr == IntPtr.Zero)
+                {
+                    Log.Message(LogTypes.Error, "Invalid entry point.");
+                    return;
+                }
+                Marshal.GetDelegateForFunctionPointer<OnInstall>(installPtr)(ref func);
+            }
+            else
+            {
+                var args = new object[1];
+                args[0] = (IntPtr) func;
+                var asm = Assembly.LoadFile(_path);
+                if (asm == null)
+                {
+                    Log.Message(LogTypes.Error,$"Unable to load assembly:{_path}");
+                    return;
+                }
+                
+                var type = asm.GetType("Assistant.Engine");
+                if (type == null)
+                {
+                    Log.Message(LogTypes.Error,$"Unable to find Plugin Type, API requires the class Engine in namespace Assistant.");
+                    return;
+                }
+                var meth = type.GetMethod("Install", BindingFlags.Public | BindingFlags.Static);
+                if (meth == null)
+                {
+                    Log.Message(LogTypes.Error,$"Engine class missing public static Install method");
+                    return;
+                }
+                    
+                meth.Invoke(null, args);
+            }
+
+
 
             if (header.OnRecv != IntPtr.Zero)
                 _onRecv = Marshal.GetDelegateForFunctionPointer<OnPacketSendRecv>(header.OnRecv);
