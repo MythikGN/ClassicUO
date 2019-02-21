@@ -27,8 +27,8 @@ namespace ClassicUO.IO.Resources
             }
             else
             {
-                path = Path.Combine(FileManager.UoFolderPath, "Gumpart.mul");
-                string pathidx = Path.Combine(FileManager.UoFolderPath, "Gumpidx.mul");
+                path = Path.Combine(FileManager.UoFolderPath, "gumpart.mul");
+                string pathidx = Path.Combine(FileManager.UoFolderPath, "gumpidx.mul");
                 if (File.Exists(path) && File.Exists(pathidx)) _file = new UOFileMul(path, pathidx, Constants.MAX_GUMP_DATA_INDEX_COUNT, 12);
                 FileManager.UseUOPGumps = false;
             }
