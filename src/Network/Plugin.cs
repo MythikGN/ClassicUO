@@ -78,7 +78,7 @@ namespace ClassicUO.Network
         private static readonly List<Plugin> _plugins = new List<Plugin>();
 
 
-        private delegate void OnInstall(ref void* header);
+        private delegate void OnInstall(void* header);
 
 
         public void Load()
@@ -149,7 +149,7 @@ namespace ClassicUO.Network
                     Log.Message(LogTypes.Error, "Invalid entry point.");
                     return;
                 }
-                Marshal.GetDelegateForFunctionPointer<OnInstall>(installPtr)(ref func);
+                Marshal.GetDelegateForFunctionPointer<OnInstall>(installPtr)(func);
             }
             else
             {
