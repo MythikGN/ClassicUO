@@ -3,7 +3,9 @@ using ClassicUO.Game.Managers;
 using ClassicUO.Game.Scenes;
 using ClassicUO.Game.UI.Controls;
 using ClassicUO.Input;
+using ClassicUO.Renderer;
 using Microsoft.Xna.Framework;
+using SDL2;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,37 +16,33 @@ namespace ClassicUO.Game.UI.Gumps
 {
     class AnchorableGump : Gump
     {
-        //public AnchorManager.AnchorGroup AnchorGroup { get; set; }
-        private int prevX, prevY;
+        private GumpPic _lockGumpPic;
+        private int _prevX, _prevY;
 
         public AnchorableGump(Serial local, Serial server) : base(local, server)
         {
+
         }
 
         protected override void OnMove()
         {
-            Engine.AnchorManager[this]?.UpdateLocation(this, X - prevX, Y - prevY);
-            prevX = X;
-            prevY = Y;
+            Engine.AnchorManager[this]?.UpdateLocation(this, X - _prevX, Y - _prevY);
+            _prevX = X;
+            _prevY = Y;
 
             base.OnMove();
         }
-
+        
         protected override void OnMouseDown(int x, int y, MouseButton button)
         {
-            prevX = X;
-            prevY = Y;
+            Engine.AnchorManager[this]?.MakeTopMost();
+
+            _prevX = X;
+            _prevY = Y;
 
             base.OnMouseDown(x, y, button);
         }
-
-        public override void Dispose()
-        {
-            Engine.AnchorManager.DisposeAllControls(this);
-
-            base.Dispose();
-        }
-
+        
         protected override void OnMouseOver(int x, int y)
         {
             if (Engine.UI.IsDragging)
@@ -78,6 +76,48 @@ namespace ClassicUO.Game.UI.Gumps
             }
 
             base.OnDragEnd(x, y);
+        }
+
+        public override void Update(double totalMS, double frameMS)
+        {
+            base.Update(totalMS, frameMS);
+
+            if (Input.Keyboard.Alt && Engine.AnchorManager[this] != null && _lockGumpPic == null)
+            {
+                _lockGumpPic = new GumpPic(0, 0, 0x082C, 0);
+                _lockGumpPic.Update(totalMS, frameMS);
+                _lockGumpPic.AcceptMouseInput = true;
+                _lockGumpPic.X = Width - _lockGumpPic.Width;
+                _lockGumpPic.Y = 0;
+                _lockGumpPic.MouseClick += _lockGumpPic_MouseClick;
+
+                Add(_lockGumpPic);
+            } else if ((!Input.Keyboard.Alt || Engine.AnchorManager[this] == null) && _lockGumpPic != null)
+            {
+                Remove(_lockGumpPic);
+                _lockGumpPic.Dispose();
+                _lockGumpPic = null;
+            }
+        }
+
+        protected override void CloseWithRightClick()
+        {
+            Engine.AnchorManager.DisposeAllControls(this);
+
+            base.CloseWithRightClick();
+        }
+
+        private void _lockGumpPic_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButton.Left)
+                Engine.AnchorManager.DetachControl(this);
+        }
+
+        public override void Dispose()
+        {
+            Engine.AnchorManager.DetachControl(this);
+            
+            base.Dispose();
         }
     }
 }

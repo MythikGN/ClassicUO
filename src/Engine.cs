@@ -69,7 +69,7 @@ namespace ClassicUO
         private const int MIN_FPS = 15;
         private const int MAX_FPS = 250;
         private const int LOGIN_SCREEN_FPS = 60;
-
+        private static GameWindow _window;
         private static int _fpsLimit = 30;
         private static Engine _engine;
         private readonly GraphicsDeviceManager _graphicDeviceManager;
@@ -118,6 +118,7 @@ namespace ClassicUO
             _graphicDeviceManager.ApplyChanges();
 
             _isHighDPI = Environment.GetEnvironmentVariable("FNA_GRAPHICS_ENABLE_HIGHDPI") == "1";
+            _window = Window;
 
             Window.ClientSizeChanged += (sender, e) =>
             {
@@ -167,9 +168,18 @@ namespace ClassicUO
             }
         }
 
-        public static Version Version { get; } = new Version(0, 0, 1, 1);
+        public static Version Version { get; } = new Version(0, 0, 1, 2);
 
         public static int CurrentFPS { get; private set; }
+
+        public static bool AllowWindowResizing
+        {
+            get => _window.AllowUserResizing;
+            set
+            {
+                _window.AllowUserResizing = value;
+            }
+        }
 
         /// <summary>
         ///     Total game time in milliseconds
@@ -391,7 +401,7 @@ namespace ClassicUO
                 SetDllDirectory(libsPath);
             }
 
-            Environment.SetEnvironmentVariable("FNA_GRAPHICS_ENABLE_HIGHDPI", "1");
+            //Environment.SetEnvironmentVariable("FNA_GRAPHICS_ENABLE_HIGHDPI", "1");
             Environment.SetEnvironmentVariable("FNA_OPENGL_BACKBUFFER_SCALE_NEAREST", "1");
             Environment.SetEnvironmentVariable(SDL.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
             Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";" + Path.Combine(ExePath, "Data", "Plugins"));

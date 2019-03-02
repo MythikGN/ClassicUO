@@ -132,12 +132,16 @@ namespace ClassicUO.Configuration
         [JsonProperty] public Point DebugGumpPosition { get; set; } = new Point(0, 0);
         [JsonProperty] public bool DebugGumpIsMinimized { get; set; } = false;
         [JsonProperty] public bool DebugGumpIsDisabled { get; set; } = false;
+        [JsonProperty] public bool UseCustomLightLevel { get; set; } = false;
+        [JsonProperty] public byte LightLevel { get; set; } = 0;
+        [JsonProperty] public bool CloseHealthBarIfMobileNotExists { get; set; } = false;
 
         [JsonProperty] public int MaxFPS { get; set; } = 60;
 
         [JsonProperty] public Macro[] Macros { get; set; } = new Macro[0];
 
         internal static string ProfilePath { get; } = Path.Combine(Engine.ExePath, "Data", "Profiles");
+        internal static string DataPath { get; } = Path.Combine(Engine.ExePath, "Data");
         public void Save(List<Gump> gumps = null)
         {
             if (string.IsNullOrEmpty(ServerName))
