@@ -93,7 +93,7 @@ namespace ClassicUO.Game.GameObjects
             //    _edge.SetData(new Color[] { Color.LightBlue });
             //}
 
-            //batcher.DrawRectangle(_edge, new Rectangle((int) position.X - Bounds.X, (int) position.Y - Bounds.Y, _text.Width, _text.Height) , Vector3.Zero);
+            //batcher.DrawRectangle(_edge, new Rectangle((int)position.X - Bounds.X, (int)position.Y - Bounds.Y, _text.Width, _text.Height), Vector3.Zero);
 
             return ok;
         }

@@ -81,6 +81,7 @@ namespace ClassicUO.Game.UI.Gumps
         public HealthBarGump() : base(0, 0)
         {
             CanMove = true;
+            AnchorGroupName = "healthbar";
         }
 
         public Mobile Mobile { get; private set; }
@@ -175,7 +176,7 @@ namespace ClassicUO.Game.UI.Gumps
                     Width = _background.Texture.Width;
                     Height = _background.Texture.Height;
 
-                    Add(_textBox = new TextBox(1, width: 150, isunicode: false, hue: textColor)
+                    Add(_textBox = new TextBox(1, width: 150, isunicode: false, hue: textColor, style: FontStyle.Fixed)
                     {
                         X = 16,
                         Y = 14,
@@ -219,6 +220,17 @@ namespace ClassicUO.Game.UI.Gumps
             }
             else if (_canChangeName)
                 _textBox.IsEditable = false;
+        }
+
+        protected override void OnMouseUp(int x, int y, MouseButton button)
+        {
+            Point offset = Mouse.LDroppedOffset;
+
+            if (Math.Abs(offset.X) > Constants.MIN_PICKUP_DRAG_DISTANCE_PIXELS || Math.Abs(offset.Y) > Constants.MIN_PICKUP_DRAG_DISTANCE_PIXELS)
+            {
+                TargetManager.TargetGameObject(Mobile);
+                Mouse.LastLeftButtonClickTime = 0;
+            }
         }
 
         protected override bool OnMouseDoubleClick(int x, int y, MouseButton button)

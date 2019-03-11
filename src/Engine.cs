@@ -93,6 +93,7 @@ namespace ClassicUO
 
         private Engine(Settings settings)
         {
+            Instance = this;
             _settings = settings ?? ConfigurationResolver.Load<Settings>(Path.Combine(ExePath, "settings.json"));
 
             if (_settings == null)
@@ -211,6 +212,8 @@ namespace ClassicUO
                     SDL.SDL_RestoreWindow(wnd);
             }
         }
+
+        public static Engine Instance { get; private set; }
 
         public static int WindowWidth
         {
@@ -378,7 +381,7 @@ namespace ClassicUO
         private static void Configure()
         {
             Log.Start(LogTypes.All);
-            ExePath = Directory.GetCurrentDirectory();
+            ExePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
 #if !DEBUG
             AppDomain.CurrentDomain.UnhandledException += async (sender, e) =>

@@ -19,9 +19,15 @@
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #endregion
 
+using System;
+
 using ClassicUO.Game.GameObjects;
+using ClassicUO.Game.Managers;
 using ClassicUO.Game.Scenes;
+using ClassicUO.Game.UI.Gumps;
 using ClassicUO.Input;
+
+using Microsoft.Xna.Framework;
 
 namespace ClassicUO.Game.UI.Controls
 {
@@ -40,8 +46,47 @@ namespace ClassicUO.Game.UI.Controls
             if (button == MouseButton.Left)
             {
                 GameScene gs = Engine.SceneManager.GetScene<GameScene>();
-                if (gs.IsHoldingItem && gs.IsMouseOverUI)
-                    gs.DropHeldItemToContainer(Backpack);
+
+                if (TargetManager.IsTargeting)
+                {
+                    Point offset = Mouse.LDroppedOffset;
+
+                    if (Mouse.IsDragging && !(Math.Abs(offset.X) > Constants.MIN_PICKUP_DRAG_DISTANCE_PIXELS || Math.Abs(offset.Y) > Constants.MIN_PICKUP_DRAG_DISTANCE_PIXELS))
+                        return;
+
+                    switch (TargetManager.TargetingState)
+                    {
+                        case CursorTarget.Position:
+                        case CursorTarget.Object:
+                            gs.SelectedObject = Backpack;
+
+
+                            if (Backpack != null)
+                            {
+                                TargetManager.TargetGameObject(Backpack);
+                                Mouse.LastLeftButtonClickTime = 0;
+                            }
+
+                            break;
+
+                        case CursorTarget.SetTargetClientSide:
+                            gs.SelectedObject = Backpack;
+
+                            if (Backpack != null)
+                            {
+                                TargetManager.TargetGameObject(Backpack);
+                                Mouse.LastLeftButtonClickTime = 0;
+                                Engine.UI.Add(new InfoGump(Backpack));
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+
+                    if (gs.IsHoldingItem && gs.IsMouseOverUI)
+                        gs.DropHeldItemToContainer(Backpack);
+                }
             }
         }
 

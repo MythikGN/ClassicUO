@@ -89,7 +89,7 @@ namespace ClassicUO.Configuration
         [JsonProperty] public bool EnableSkillReport { get; set; } = true;
         [JsonProperty] public bool UseOldStatusGump { get; set; } = false;
         [JsonProperty] public int BackpackStyle { get; set; } = 0;
-        [JsonProperty] public bool HighlightGameObjects { get; set; } = true;
+        [JsonProperty] public bool HighlightGameObjects { get; set; } = false;
         [JsonProperty] public bool HighlightMobilesByFlags { get; set; } = true;
         [JsonProperty] public bool ShowMobilesHP { get; set; } = false;
         [JsonProperty] public int MobileHPType { get; set; } = 0;
@@ -244,6 +244,8 @@ namespace ClassicUO.Configuration
                             gump.Restore(reader);
                             gump.X = x;
                             gump.Y = y;
+
+                            //gump.SetInScreen();
 
                             if (gump.LocalSerial != 0)
                                 Engine.UI.SavePosition(gump.LocalSerial, new Point(x, y));

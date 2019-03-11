@@ -141,6 +141,7 @@ namespace ClassicUO.Renderer
         {
             if (texture == null || texture.IsDisposed)
                 return false;
+
             bool draw = false;
 
             for (byte i = 0; i < 4; i++)
@@ -148,7 +149,6 @@ namespace ClassicUO.Renderer
                 if (_drawingArea.Contains(vertices[i].Position) == ContainmentType.Contains)
                 {
                     draw = true;
-
                     break;
                 }
             }

@@ -65,7 +65,7 @@ namespace ClassicUO.Game.UI.Controls
             if (FileManager.Animations.EquipConversions.TryGetValue(Mobile.Graphic, out var dict))
             {
                 if (dict.TryGetValue(id, out EquipConvData data))
-                    id = (ushort)(data.Gump >= FEMALE_OFFSET ? data.Gump - FEMALE_OFFSET : data.Gump - MALE_OFFSET);
+                    id = data.Gump; /*(ushort)(data.Gump >= FEMALE_OFFSET ? data.Gump - FEMALE_OFFSET : data.Gump - MALE_OFFSET)*/;
             }
 
             Texture = FileManager.Gumps.GetTexture((ushort)(id + offset));
@@ -76,7 +76,7 @@ namespace ClassicUO.Game.UI.Controls
             if (Texture == null)
             {
                 if (item.Layer != Layer.Face)
-                    Log.Message(LogTypes.Error, $"No texture founded for Item ({item.Serial}) {item.Graphic} {item.ItemData.Name} {item.Layer}");
+                    Log.Message(LogTypes.Error, $"No texture found for Item ({item.Serial}) {item.Graphic} {item.ItemData.Name} {item.Layer}");
                 Dispose();
                 return;
             }
@@ -124,7 +124,7 @@ namespace ClassicUO.Game.UI.Controls
                     Engine.UI.Add(container);
                 }
 
-                container.X = ScreenCoordinateX + _clickedPoint.X /*- (container.Width >> 1)*/;
+                container.X = ScreenCoordinateX + _clickedPoint.X - (container.Width >> 1);
                 container.Y = ScreenCoordinateY + _clickedPoint.Y - (container.Height >> 1);
 
                 Engine.UI.MakeTopMostGumpOverAnother(container, this);
@@ -165,7 +165,15 @@ namespace ClassicUO.Game.UI.Controls
                 if (TargetManager.IsTargeting)
                 {
                     if (Mouse.IsDragging && Mouse.LDroppedOffset != Point.Zero)
+                    {
+                        if (gs == null || !gs.IsHoldingItem || !gs.IsMouseOverUI)
+                        {
+                            return;
+                        }
+
+                        gs.WearHeldItem(Mobile);
                         return;
+                    }
 
                     switch (TargetManager.TargetingState)
                     {
