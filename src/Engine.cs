@@ -104,7 +104,7 @@ namespace ClassicUO
                 _settings.Save();
                 IsQuitted = true;
                 return;
-            }
+            }         
 
             TargetElapsedTime = TimeSpan.FromSeconds(1.0f / MAX_FPS);
             IsFixedTimeStep = _settings.FixedTimeStep;
@@ -116,6 +116,7 @@ namespace ClassicUO
                 _graphicDeviceManager.GraphicsProfile = GraphicsProfile.HiDef;
             _graphicDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             _graphicDeviceManager.SynchronizeWithVerticalRetrace = false;
+            _graphicDeviceManager.PreferMultiSampling = true;
             _graphicDeviceManager.ApplyChanges();
 
             _isHighDPI = Environment.GetEnvironmentVariable("FNA_GRAPHICS_ENABLE_HIGHDPI") == "1";
@@ -169,7 +170,7 @@ namespace ClassicUO
             }
         }
 
-        public static Version Version { get; } = new Version(0, 0, 1, 2);
+        public static Version Version { get; } = new Version(0, 0, 1, 3);
 
         public static int CurrentFPS { get; private set; }
 

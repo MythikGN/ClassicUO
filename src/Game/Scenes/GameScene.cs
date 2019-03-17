@@ -202,7 +202,6 @@ namespace ClassicUO.Game.Scenes
             Scale = (Engine.Profile.Current.SaveScaleAfterClose) ? Engine.Profile.Current.ScaleZoom : 1f;
 
             Plugin.OnConnected();
-            //Coroutine.Start(this, CastSpell());
         }
 
         private void ChatOnMessage(object sender, UOMessageEventArgs e)
@@ -273,68 +272,54 @@ namespace ClassicUO.Game.Scenes
                     Log.Message(LogTypes.Warning, $"Unhandled text type {e.Type}  -  text: '{e.Text}'");
                     break;
             }
-
-            _journalManager.Add(text, e.Font, hue, name);
-        }
-
-        private IEnumerable<IWaitCondition> CastSpell()
-        {
-            while (true)
-            {
-                yield return new WaitTime(TimeSpan.FromMilliseconds(1));
-
-                foreach (Mobile mobile in World.Mobiles)
-                {
-                    mobile.AddOverhead(MessageType.Regular, "AAAAAAAAAAAAAAAAAAAAA", 1, 0x45, true);
-                }
-            }
+            
+            _journalManager.Add(text, hue, name, e.IsUnicode);
         }
 
         public override void Unload()
         {
+
+            HeldItem?.Clear();
+
             try
             {
-                HeldItem?.Clear();
-
                 Plugin.OnDisconnected();
-
-                _renderList = null;
-
-                TargetManager.ClearTargetingWithoutTargetCancelPacket();
-
-                Engine.Profile.Current?.Save(Engine.UI.Gumps.OfType<Gump>().Where(s => s.CanBeSaved).Reverse().ToList());
-                Engine.Profile.UnLoadProfile();
-
-                NetClient.Socket.Disconnected -= SocketOnDisconnected;
-                NetClient.Socket.Disconnect();
-                _renderTarget?.Dispose();
-                CommandManager.UnRegisterAll();
-
-                Engine.UI?.Clear();
-                World.Clear();
-
-                _viewPortGump.MouseDown -= OnMouseDown;
-                _viewPortGump.MouseUp -= OnMouseUp;
-                _viewPortGump.MouseDoubleClick -= OnMouseDoubleClick;
-                _viewPortGump.DragBegin -= OnMouseDragBegin;
-
-                Engine.Input.KeyDown -= OnKeyDown;
-                Engine.Input.KeyUp -= OnKeyUp;
-
-                _overheadManager?.Dispose();
-                _overheadManager = null;
-                _journalManager?.Clear();
-                _journalManager = null;
-                _overheadManager = null;
-                _useItemQueue?.Clear();
-                _useItemQueue = null;
-                _hotkeysManager = null;
-                _macroManager = null;
-                Chat.Message -= ChatOnMessage;
-
-            } catch
-            {
             }
+            catch { }
+
+            _renderList = null;
+
+            TargetManager.ClearTargetingWithoutTargetCancelPacket();
+
+            Engine.Profile.Current?.Save(Engine.UI.Gumps.OfType<Gump>().Where(s => s.CanBeSaved).Reverse().ToList());
+            Engine.Profile.UnLoadProfile();
+
+            NetClient.Socket.Disconnected -= SocketOnDisconnected;
+            NetClient.Socket.Disconnect();
+            _renderTarget?.Dispose();
+            CommandManager.UnRegisterAll();
+
+            Engine.UI?.Clear();
+            World.Clear();
+
+            _viewPortGump.MouseDown -= OnMouseDown;
+            _viewPortGump.MouseUp -= OnMouseUp;
+            _viewPortGump.MouseDoubleClick -= OnMouseDoubleClick;
+            _viewPortGump.DragBegin -= OnMouseDragBegin;
+
+            Engine.Input.KeyDown -= OnKeyDown;
+            Engine.Input.KeyUp -= OnKeyUp;
+
+            _overheadManager?.Dispose();
+            _overheadManager = null;
+            _journalManager?.Clear();
+            _journalManager = null;
+            _overheadManager = null;
+            _useItemQueue?.Clear();
+            _useItemQueue = null;
+            _hotkeysManager = null;
+            _macroManager = null;
+            Chat.Message -= ChatOnMessage;
 
             base.Unload();
         }
@@ -440,6 +425,12 @@ namespace ClassicUO.Game.Scenes
             if (_renderIndex >= 100)
                 _renderIndex = 1;
             _updateDrawPosition = false;
+
+            if (_renderList.Length - _renderListCount != 0)
+            {
+                if (_renderList[_renderListCount] != null)
+                    Array.Clear(_renderList, _renderListCount, _renderList.Length - _renderListCount);
+            }
         }
 
         public override void Update(double totalMS, double frameMS)
@@ -556,9 +547,12 @@ namespace ClassicUO.Game.Scenes
                 int z = World.Player.Z + 5;
                 bool usecircle = Engine.Profile.Current.UseCircleOfTransparency;
 
+
+                //while (_renderList.Count != 0)
                 for (int i = 0; i < _renderListCount; i++)
                 {
-                    GameObject obj = _renderList[i];
+                    GameObject obj = _renderList[i]; //_renderList.Dequeue();
+
                     if (obj.Z <= _maxGroundZ)
                     {
                         obj.DrawTransparent = usecircle && obj.TransparentTest(z);

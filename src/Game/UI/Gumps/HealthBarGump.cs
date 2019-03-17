@@ -63,6 +63,7 @@ namespace ClassicUO.Game.UI.Gumps
         private bool _canChangeName;
         private bool _outOfRange;
         private string _name;
+        private bool _isDead;
 
         private enum ButtonParty
         {
@@ -179,11 +180,12 @@ namespace ClassicUO.Game.UI.Gumps
                     Width = _background.Texture.Width;
                     Height = _background.Texture.Height;
 
-                    Add(_textBox = new TextBox(1, width: 150, isunicode: false, hue: textColor, style: FontStyle.Fixed)
+                    Add(_textBox = new TextBox(1, width: 120, isunicode: false, hue: textColor, style: FontStyle.Fixed)
                     {
                         X = 16,
                         Y = 14,
-                        Width = 150,
+                        Width = 120,
+                        Height = 30,
                         IsEditable = false,
                         AcceptMouseInput = _canChangeName,
                         AcceptKeyboardInput = _canChangeName,
@@ -225,11 +227,9 @@ namespace ClassicUO.Game.UI.Gumps
                 _textBox.IsEditable = false;
         }
 
-        protected override void OnMouseUp(int x, int y, MouseButton button)
+        protected override void OnMouseDown(int x, int y, MouseButton button)
         {
-            Point offset = Mouse.LDroppedOffset;
-
-            if (Math.Abs(offset.X) > Constants.MIN_PICKUP_DRAG_DISTANCE_PIXELS || Math.Abs(offset.Y) > Constants.MIN_PICKUP_DRAG_DISTANCE_PIXELS)
+            if (TargetManager.IsTargeting)
             {
                 TargetManager.TargetGameObject(Mobile);
                 Mouse.LastLeftButtonClickTime = 0;
@@ -273,8 +273,6 @@ namespace ClassicUO.Game.UI.Gumps
                 _textBox.IsEditable = false;
             }
         }
-
-        private bool _isDead;
 
         public override void Update(double totalMS, double frameMS)
         {

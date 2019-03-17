@@ -155,6 +155,8 @@ namespace ClassicUO.Game.Scenes
         private int _renderListCount;
         private int _objectHandlesCount;
         private GameObject[] _renderList = new GameObject[2000];
+        //private Queue<GameObject> _renderList = new Queue<GameObject>();
+
         private Point _offset, _maxTile, _minTile;
         private Vector2 _minPixel, _maxPixel;
         private int _maxZ;
@@ -294,7 +296,7 @@ namespace ClassicUO.Game.Scenes
                     continue;
 
                 
-                if (obj.Overheads != null && obj.Overheads.Count != 0)
+                if (obj.HasOverheads && obj.Overheads.Count != 0)
                 {
                     int offY;
 
@@ -315,26 +317,29 @@ namespace ClassicUO.Game.Scenes
                             break;
                     }
 
-                    for (int i = 0; i < obj.Overheads.Count; i++)
+                    if (obj.HasOverheads)
                     {
-                        TextOverhead v = obj.Overheads[i];
-                        v.Bounds.X = (v.Texture.Width >> 1) - 22;
-                        v.Bounds.Y = offY + v.Texture.Height;
-                        v.Bounds.Width = v.Texture.Width;
-                        v.Bounds.Height = v.Texture.Height;
-                        Overheads.AddOverhead(v);
-                        offY += v.Texture.Height;
-
-                        if (_alphaChanged)
+                        for (int i = 0; i < obj.Overheads.Count; i++)
                         {
-                            if (v.TimeToLive > 0 && v.TimeToLive <= Constants.TIME_FADEOUT_TEXT)
+                            TextOverhead v = obj.Overheads[i];
+                            v.Bounds.X = (v.Texture.Width >> 1) - 22;
+                            v.Bounds.Y = offY + v.Texture.Height;
+                            v.Bounds.Width = v.Texture.Width;
+                            v.Bounds.Height = v.Texture.Height;
+                            Overheads.AddOverhead(v);
+                            offY += v.Texture.Height;
+
+                            if (_alphaChanged)
                             {
-                                if (!v.IsOverlapped)
-                                    v.ProcessAlpha(0);
-                            }
-                            else if (!v.IsOverlapped && v.AlphaHue != 0xFF)
-                            {
-                                v.ProcessAlpha(0xFF);
+                                if (v.TimeToLive > 0 && v.TimeToLive <= Constants.TIME_FADEOUT_TEXT)
+                                {
+                                    if (!v.IsOverlapped)
+                                        v.ProcessAlpha(0);
+                                }
+                                else if (!v.IsOverlapped && v.AlphaHue != 0xFF)
+                                {
+                                    v.ProcessAlpha(0xFF);
+                                }
                             }
                         }
                     }
@@ -432,7 +437,8 @@ namespace ClassicUO.Game.Scenes
                 }
                 
 
-                _renderList[_renderListCount] = obj;
+                 _renderList[_renderListCount] = obj;
+                 //_renderList.Enqueue(obj);
                 //obj.UseInRender = (byte) _renderIndex;
                 _renderListCount++;
             }

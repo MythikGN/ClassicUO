@@ -634,6 +634,9 @@ namespace ClassicUO.Network
             if (scene.HeldItem.Serial == serial)
                 scene.HeldItem.Enabled = false;
 
+            if (World.CorpseManager.Exists(0, serial))
+                return;
+
             if (serial.IsItem)
             {
                 Item item = World.Items.Get(serial);
@@ -1198,7 +1201,7 @@ namespace ClassicUO.Network
                 if (FileManager.ClientVersion >= ClientVersions.CV_6017)
                     p.Skip(1);
                 Serial containerSerial = p.ReadUInt();
-                Hue hue = p.ReadUShort();
+                Hue hue = p.Position + 2 < p.Length ? p.ReadUShort() : p.ReadByte();
 
                 if (i == 0)
                 {
@@ -1301,7 +1304,7 @@ namespace ClassicUO.Network
 
             float soundByRange = Engine.Profile.Current.SoundVolume / (float)World.ViewRange;
             soundByRange *= World.Player.Position.DistanceTo(position);
-            float volume = (Engine.Profile.Current.SoundVolume - soundByRange) / 2500f;
+            float volume = (Engine.Profile.Current.SoundVolume - soundByRange) / Constants.SOUND_DELTA;
 
             Engine.SceneManager.CurrentScene.Audio.PlaySoundWithDistance(index, volume, true);
         }
@@ -1898,15 +1901,21 @@ namespace ClassicUO.Network
             if (mobile == null) return;
             string text = p.ReadASCII(60);
             byte flags = p.ReadByte();
-            UIManager ui = Engine.UI;
 
-            if (ui.GetByLocalSerial<PaperDollGump>(mobile) == null)
+            var paperdoll = Engine.UI.GetByLocalSerial<PaperDollGump>(mobile);
+
+            if (paperdoll == null)
             {
-                if (!ui.GetGumpCachePosition(mobile, out Point location))
+                if (!Engine.UI.GetGumpCachePosition(mobile, out Point location))
                 {
                     location = new Point(100, 100);
                 }
-                ui.Add(new PaperDollGump(mobile, text) { Location = location });
+                Engine.UI.Add(new PaperDollGump(mobile, text) { Location = location });
+            }
+            else
+            {
+                paperdoll.SetInScreen();
+                paperdoll.BringOnTop();
             }
         }
 
@@ -1916,7 +1925,7 @@ namespace ClassicUO.Network
                 return;
 
             Entity corpse = World.Get(p.ReadUInt());
-            Layer layer = (Layer)p.ReadByte() - 1;
+            Layer layer = (Layer)p.ReadByte();
 
             while (layer != Layer.Invalid && p.Position < p.Length)
             {
@@ -1928,7 +1937,7 @@ namespace ClassicUO.Network
                     corpse.Equipment[(int) layer] = item;
                 }
 
-                layer = (Layer)p.ReadByte() - 1;
+                layer = (Layer)p.ReadByte();
             }
         }
 
@@ -2266,26 +2275,10 @@ namespace ClassicUO.Network
 
             serial |= 0x80000000;
 
+            World.Mobiles.Replace(owner, serial);
 
-            //World.Mobiles.Remove(owner);
-            //World.Mobiles.ProcessDelta();
-
-            //Mobile newOwner = World.GetOrCreateMobile(serial);
-
-            //foreach (Item i in owner.Items)
-            //{
-            //    i.Container = serial;
-            //    newOwner.Items.Add(i); // item duping?
-            //}
-
-            //World.Mobiles.Add(newOwner);
-            //newOwner.ProcessDelta();
-            //World.Mobiles.ProcessDelta();
-
-            //if (corpseSerial.IsValid)
-            //{
-
-            //}
+            if (corpseSerial.IsValid)
+                World.CorpseManager.Add(corpseSerial, serial, owner.Direction, running != 0);
 
             byte group = FileManager.Animations.GetDieGroupIndex(owner.Graphic, running != 0);
 

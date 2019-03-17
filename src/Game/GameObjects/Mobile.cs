@@ -494,7 +494,7 @@ namespace ClassicUO.Game.GameObjects
 
                     float soundByRange = Engine.Profile.Current.SoundVolume / (float) World.ViewRange;
                     soundByRange *= Distance;
-                    float volume = (Engine.Profile.Current.SoundVolume - soundByRange) / 2500f;
+                    float volume = (Engine.Profile.Current.SoundVolume - soundByRange) / Constants.SOUND_DELTA;
 
                     //if (volume > 0 && volume < 0.01f)
                     //    volume = 0.01f;
@@ -702,16 +702,36 @@ namespace ClassicUO.Game.GameObjects
                         }
                         else
                         {
-                            if (frameIndex >= fc) frameIndex = 0;
+                            if (frameIndex >= fc)
+                            {
+                                frameIndex = 0;
+
+                                if ((Serial & 0x80000000) != 0)
+                                {
+                                    World.CorpseManager.Remove(0, Serial);
+                                    World.RemoveMobile(this);
+                                }
+                            }
                         }
 
                         AnimIndex = frameIndex;
                     }
+                    else if ((Serial & 0x80000000) != 0)
+                    {
+                        World.CorpseManager.Remove(0, Serial);
+                        World.RemoveMobile(this);
+                    }
+                }
+                else if ((Serial & 0x80000000) != 0)
+                {
+                    World.CorpseManager.Remove(0, Serial);
+                    World.RemoveMobile(this);
                 }
 
                 LastAnimationChangeTime = Engine.Ticks + currentDelay;
             }
         }
+
 
         /* public int IsSitting
         {

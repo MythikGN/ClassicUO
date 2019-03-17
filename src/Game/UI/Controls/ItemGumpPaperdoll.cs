@@ -65,7 +65,12 @@ namespace ClassicUO.Game.UI.Controls
             if (FileManager.Animations.EquipConversions.TryGetValue(Mobile.Graphic, out var dict))
             {
                 if (dict.TryGetValue(id, out EquipConvData data))
-                    id = data.Gump; /*(ushort)(data.Gump >= FEMALE_OFFSET ? data.Gump - FEMALE_OFFSET : data.Gump - MALE_OFFSET)*/;
+                {
+                    if (data.Gump > MALE_OFFSET)
+                        id = (ushort) (data.Gump >= FEMALE_OFFSET ? data.Gump - FEMALE_OFFSET : data.Gump - MALE_OFFSET);
+                    else
+                        id = data.Gump;
+                }
             }
 
             Texture = FileManager.Gumps.GetTexture((ushort)(id + offset));
@@ -114,7 +119,7 @@ namespace ClassicUO.Game.UI.Controls
             if (World.ClientFlags.TooltipsEnabled)
                 return;
 
-            if (!Item.IsDisposed && Item.Overheads.Count > 0)
+            if (!Item.IsDisposed && Item.HasOverheads && Item.Overheads.Count > 0)
             {
                 LabelContainer container = Engine.UI.GetByLocalSerial<LabelContainer>(Item);
 

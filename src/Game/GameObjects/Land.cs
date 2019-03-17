@@ -39,8 +39,10 @@ namespace ClassicUO.Game.GameObjects
 
             AllowedToDraw = Graphic > 2;
 
-            AlphaHue = 255;
+            AlphaHue = 255;    
         }
+
+        protected override bool CanCreateOverheads => false;
 
         private LandTiles? _tileData;
 
@@ -100,7 +102,7 @@ namespace ClassicUO.Game.GameObjects
         {
             int result = GetDirectionZ(((byte) (direction >> 1) + 1) & 3);
 
-            if ((direction & 1) > 0)
+            if ((direction & 1) != 0)
                 return result;
 
             return (result + GetDirectionZ(direction >> 1)) >> 1;
