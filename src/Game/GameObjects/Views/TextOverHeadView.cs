@@ -98,7 +98,7 @@ namespace ClassicUO.Game.GameObjects
             return ok;
         }
 
-        //private static Texture2D _edge;
+        private static Texture2D _edge;
 
         protected override void MousePick(MouseOverList list, SpriteVertex[] vertex, bool istransparent)
         {          

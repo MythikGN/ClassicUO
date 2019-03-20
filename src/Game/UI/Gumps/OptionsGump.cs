@@ -34,6 +34,8 @@ using ClassicUO.Network;
 using ClassicUO.IO;
 using ClassicUO.IO.Resources;
 
+using System.Diagnostics;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -84,6 +86,10 @@ namespace ClassicUO.Game.UI.Gumps
         const int WIDTH = 700;
         const int HEIGHT = 500;
 
+        private ScrollAreaItem _windowSizeArea = new ScrollAreaItem();
+        private ScrollAreaItem _soundsArea = new ScrollAreaItem();
+        private ScrollAreaItem _volumeArea = new ScrollAreaItem();
+
         public OptionsGump() : base(0, 0)
         {
             Add(new AlphaBlendControl(0.05f)
@@ -97,18 +103,18 @@ namespace ClassicUO.Game.UI.Gumps
             Stream stream = typeof(Engine).Assembly.GetManifestResourceStream("ClassicUO.cuologo.png");
             Texture2D.TextureDataFromStreamEXT(stream, out int w, out int h, out byte[] pixels, 350, 365);
 
-            TextureControl tc = new TextureControl()
+            TextureControl tc = new TextureControl
             {
                 X = 150 + (WIDTH - 150 - 350) / 2,
                 Y = (HEIGHT - 365) / 2,
                 Width = w,
                 Height = h,
                 Alpha = 0.95f,
-                IsTransparent =  true,
-                ScaleTexture = false
+                IsTransparent = true,
+                ScaleTexture = false,
+                Texture = new SpriteTexture(w, h)
             };
-            
-            tc.Texture = new SpriteTexture(w, h);
+
             tc.Texture.SetData(pixels);
             Add(tc);
          
@@ -323,27 +329,31 @@ namespace ClassicUO.Game.UI.Gumps
         private void BuildSounds()
         {
             const int PAGE = 2;
+
             ScrollArea rightArea = new ScrollArea(190, 20, WIDTH - 210, 420, true);
             _enableSounds = CreateCheckBox(rightArea, "Sounds", Engine.Profile.Current.EnableSound, 0, 0);
+            _enableSounds.MouseClick += (sender, e) =>
+            {
+                _soundsArea.IsVisible = (_enableSounds.IsChecked);
+            };
 
-            ScrollAreaItem item = new ScrollAreaItem();
-            Label text = new Label("- Sounds volume:", true, HUE_FONT, 0, FONT);
+            _soundsVolume = new HSliderBar(90, -15, 180, 0, 100, Engine.Profile.Current.SoundVolume, HSliderBarStyle.MetalWidgetRecessedBar, true, FONT, HUE_FONT, true);
 
-            _soundsVolume = new HSliderBar(150, 5, 180, 0, 100, Engine.Profile.Current.SoundVolume, HSliderBarStyle.MetalWidgetRecessedBar, true, FONT, HUE_FONT, true);
-            item.Add(text);
-            item.Add(_soundsVolume);
-            rightArea.Add(item);
+            _soundsArea.Add(_soundsVolume);
+            rightArea.Add(_soundsArea);
 
             _enableMusic = CreateCheckBox(rightArea, "Music", Engine.Profile.Current.EnableMusic, 0, 0);
-           
-            item = new ScrollAreaItem();
-            text = new Label("- Music volume:", true, HUE_FONT, 0, FONT);
+            _enableMusic.MouseClick += (sender, e) =>
+            {
+                _volumeArea.IsVisible = (_enableMusic.IsChecked);
+            };
 
-            _musicVolume = new HSliderBar(150, 5, 180, 0, 100, Engine.Profile.Current.MusicVolume, HSliderBarStyle.MetalWidgetRecessedBar, true, FONT, HUE_FONT, true);
+            _musicVolume = new HSliderBar(90, -15, 180, 0, 100, Engine.Profile.Current.MusicVolume, HSliderBarStyle.MetalWidgetRecessedBar, true, FONT, HUE_FONT, true);
 
-            item.Add(text);
-            item.Add(_musicVolume);
-            rightArea.Add(item);
+            _volumeArea.Add(_musicVolume);
+            rightArea.Add(_volumeArea);
+
+            ScrollAreaItem item = new ScrollAreaItem();
 
             _footStepsSound = CreateCheckBox(rightArea, "Footsteps sound", Engine.Profile.Current.EnableFootstepsSound, 0, 30);
             _combatMusic = CreateCheckBox(rightArea, "Combat music", Engine.Profile.Current.EnableCombatMusic, 0, 0);
@@ -352,11 +362,14 @@ namespace ClassicUO.Game.UI.Gumps
             _loginMusic = CreateCheckBox(rightArea, "Login music", Engine.GlobalSettings.LoginMusic, 0, 40);
 
             item = new ScrollAreaItem();
-            text = new Label("- Login music volume:", true, HUE_FONT, 0, FONT);
+            Label text = new Label("- Login music volume:", true, HUE_FONT, 0, FONT);
             _loginMusicVolume = new HSliderBar(150, 5, 180, 0, 100, Engine.GlobalSettings.LoginMusicVolume, HSliderBarStyle.MetalWidgetRecessedBar, true, FONT, HUE_FONT, true);
             item.Add(text);
             item.Add(_loginMusicVolume);
             rightArea.Add(item);
+
+            _soundsArea.IsVisible = (_enableSounds.IsChecked);
+            _volumeArea.IsVisible = (_enableMusic.IsChecked);
 
             Add(rightArea, PAGE);
         }
@@ -366,16 +379,87 @@ namespace ClassicUO.Game.UI.Gumps
             const int PAGE = 3;
 
             ScrollArea rightArea = new ScrollArea(190, 20, WIDTH - 210, 420, true);
-            _debugControls = CreateCheckBox(rightArea, "Debugging mode", Engine.GlobalSettings.Debug, 0, 0);
+
+            ScrollAreaItem item = new ScrollAreaItem();
+            _gameWindowFullsize = new Checkbox(0x00D2, 0x00D3, "Always use fullsize game window", FONT, HUE_FONT, true)
+            {
+                Y = 20,
+                IsChecked = Engine.Profile.Current.GameWindowFullSize
+            };
+            _gameWindowFullsize.MouseClick += (sender, e) =>
+            {
+                _windowSizeArea.IsVisible = (!_gameWindowFullsize.IsChecked);
+            };
+
+            item.Add(_gameWindowFullsize);
+            rightArea.Add(item);
+
+            _gameWindowLock = new Checkbox(0x00D2, 0x00D3, "Lock game window moving/resizing", FONT, HUE_FONT, true)
+            {
+                Y = 0,
+                IsChecked = Engine.Profile.Current.GameWindowLock
+            };
+
+            _windowSizeArea.Add(_gameWindowLock);
+
+            _gameWindowWidth = CreateInputField(_windowSizeArea, new TextBox(1, 5, 80, 80, false)
+            {
+                Text = Engine.Profile.Current.GameWindowSize.X.ToString(),
+                X = 10,
+                Y = 60,
+                Width = 50,
+                Height = 30,
+                UNumericOnly = true
+            }, "Game Play Window Size: ");
+
+            _gameWindowHeight = CreateInputField(_windowSizeArea, new TextBox(1, 5, 80, 80, false)
+            {
+                Text = Engine.Profile.Current.GameWindowSize.Y.ToString(),
+                X = 80,
+                Y = 60,
+                Width = 50,
+                Height = 30,
+                UNumericOnly = true
+            });
+
+            Label text = new Label("Game Play Window Position: ", true, HUE_FONT, 0, FONT)
+            {
+                X = 190,
+                Y = 30,
+            };
+            _windowSizeArea.Add(text);
+
+            _gameWindowPositionX = CreateInputField(_windowSizeArea, new TextBox(1, 5, 80, 80, false)
+            {
+                Text = Engine.Profile.Current.GameWindowPosition.X.ToString(),
+                X = 200,
+                Y = 60,
+                Width = 50,
+                Height = 30,
+                NumericOnly = true
+            });
+
+            _gameWindowPositionY = CreateInputField(_windowSizeArea, new TextBox(1, 5, 80, 80, false)
+            {
+                Text = Engine.Profile.Current.GameWindowPosition.Y.ToString(),
+                X = 270,
+                Y = 60,
+                Width = 50,
+                Height = 30,
+                NumericOnly = true
+            });
+
+            rightArea.Add(_windowSizeArea);
+
+            _debugControls = CreateCheckBox(rightArea, "Debugging mode", Engine.GlobalSettings.Debug, 0, 20);
             _zoom = CreateCheckBox(rightArea, "Enable in game zoom scaling", Engine.Profile.Current.EnableScaleZoom, 0, 0);
             _savezoom = CreateCheckBox(rightArea, "Save scale after close game", Engine.Profile.Current.SaveScaleAfterClose, 0, 0);
-            _gameWindowFullsize = CreateCheckBox(rightArea, "Always use fullsize game window", Engine.Profile.Current.GameWindowFullSize, 0, 0);
-
+           
             _enableDeathScreen = CreateCheckBox(rightArea, "Enable Death Screen", Engine.Profile.Current.EnableDeathScreen, 0, 0);
             _enableBlackWhiteEffect = CreateCheckBox(rightArea, "Black&White mode for dead player", Engine.Profile.Current.EnableBlackWhiteEffect, 0, 0);
 
-            ScrollAreaItem item = new ScrollAreaItem();
-            Label text = new Label("- Status gump type:", true, HUE_FONT, 0, FONT)
+            item = new ScrollAreaItem();
+            text = new Label("- Status gump type:", true, HUE_FONT, 0, FONT)
             {
                 Y = 30
             };
@@ -390,62 +474,6 @@ namespace ClassicUO.Game.UI.Gumps
             rightArea.Add(item);
 
             item = new ScrollAreaItem();
-
-            _gameWindowWidth = CreateInputField(item, new TextBox(1, 5, 80, 80, false)
-            {
-                Text = Engine.Profile.Current.GameWindowSize.X.ToString(),
-                X = 10,
-                Y = 60,
-                Width = 50,
-                Height = 30,
-                NumericOnly = true
-            }, "Game Play Window Size: ");
-
-            _gameWindowHeight = CreateInputField(item, new TextBox(1, 5, 80, 80, false)
-            {
-                Text = Engine.Profile.Current.GameWindowSize.Y.ToString(),
-                X = 80,
-                Y = 60,
-                Width = 50,
-                Height = 30,
-                NumericOnly = true
-            });
-
-            _gameWindowLock = new Checkbox(0x00D2, 0x00D3, "Lock game window moving/resizing", FONT, HUE_FONT, true)
-            {
-                X = 140,
-                Y = 57,
-                IsChecked = Engine.Profile.Current.GameWindowLock
-            };
-
-            item.Add(_gameWindowLock);
-            rightArea.Add(item);
-
-            item = new ScrollAreaItem();
-
-            _gameWindowPositionX = CreateInputField(item, new TextBox(1, 5, 80, 80, false)
-            {
-                Text = Engine.Profile.Current.GameWindowPosition.X.ToString(),
-                X = 10,
-                Y = 35,
-                Width = 50,
-                Height = 30,
-                NumericOnly = true
-            }, "Game Play Window Position: ");
-
-            _gameWindowPositionY = CreateInputField(item, new TextBox(1, 5, 80, 80, false)
-            {
-                Text = Engine.Profile.Current.GameWindowPosition.Y.ToString(),
-                X = 80,
-                Y = 35,
-                Width = 50,
-                Height = 30,
-                NumericOnly = true
-            });
-
-            rightArea.Add(item);
-
-            item = new ScrollAreaItem();
             _enableLight = new Checkbox(0x00D2, 0x00D3, "Light level", FONT, HUE_FONT, true)
             {
                 Y = 20,
@@ -456,6 +484,8 @@ namespace ClassicUO.Game.UI.Gumps
             item.Add(_enableLight);
             item.Add(_lightBar);
             rightArea.Add(item);
+
+            _windowSizeArea.IsVisible = (!_gameWindowFullsize.IsChecked);
 
             Add(rightArea, PAGE);
         }
@@ -735,6 +765,8 @@ namespace ClassicUO.Game.UI.Gumps
                     _footStepsSound.IsChecked = true;
                     _loginMusicVolume.Value = 100;
                     _loginMusic.IsChecked = true;
+                    _soundsArea.IsVisible = (_enableSounds.IsChecked);
+                    _volumeArea.IsVisible = (_enableMusic.IsChecked);
                     break;
                 case 3: // video
                     _debugControls.IsChecked = false;
@@ -743,8 +775,8 @@ namespace ClassicUO.Game.UI.Gumps
                     _shardType.SelectedIndex = 0;
                     _gameWindowWidth.Text = "600";
                     _gameWindowHeight.Text = "480";
-                    _gameWindowPositionX.Text = "10";
-                    _gameWindowPositionY.Text = "10";
+                    _gameWindowPositionX.Text = "20";
+                    _gameWindowPositionY.Text = "20";
                     _gameWindowLock.IsChecked = false;
                     _gameWindowFullsize.IsChecked = false;
                     _enableDeathScreen.IsChecked = true;
@@ -752,6 +784,7 @@ namespace ClassicUO.Game.UI.Gumps
                     Engine.SceneManager.GetScene<GameScene>().Scale = 1;
                     _lightBar.Value = 0;
                     _enableLight.IsChecked = false;
+                    _windowSizeArea.IsVisible = (!_gameWindowFullsize.IsChecked);
                     break;
                 case 4: // commands
 
@@ -786,6 +819,8 @@ namespace ClassicUO.Game.UI.Gumps
 
         private void Apply()
         {
+            WorldViewportGump vp = Engine.UI.GetByLocalSerial<WorldViewportGump>();
+
             // general
             Engine.GlobalSettings.PreloadMaps = _preloadMaps.IsChecked;
             Engine.Profile.Current.MaxFPS = Engine.FpsLimit = _sliderFPS.Value;
@@ -881,7 +916,7 @@ namespace ClassicUO.Game.UI.Gumps
 
             if (gameWindowSizeWidth != Engine.Profile.Current.GameWindowSize.X || gameWindowSizeHeight != Engine.Profile.Current.GameWindowSize.Y)
             {
-                Point n = Engine.UI.GetByLocalSerial<WorldViewportGump>().ResizeWindow(new Point(gameWindowSizeWidth, gameWindowSizeHeight));
+                Point n = vp.ResizeWindow(new Point(gameWindowSizeWidth, gameWindowSizeHeight));
 
                 _gameWindowWidth.Text = n.X.ToString();
                 _gameWindowHeight.Text = n.Y.ToString();
@@ -892,35 +927,41 @@ namespace ClassicUO.Game.UI.Gumps
 
             if (gameWindowPositionX != Engine.Profile.Current.GameWindowPosition.X || gameWindowPositionY != Engine.Profile.Current.GameWindowPosition.Y)
             {
-                Engine.UI.GetByLocalSerial<WorldViewportGump>().Location = Engine.Profile.Current.GameWindowPosition = new Point(gameWindowPositionX, gameWindowPositionY);
+                vp.Location = Engine.Profile.Current.GameWindowPosition = new Point(gameWindowPositionX, gameWindowPositionY);
             }
 
             if (Engine.Profile.Current.GameWindowLock != _gameWindowLock.IsChecked)
             {
-                Engine.UI.GetByLocalSerial<WorldViewportGump>().CanMove = !_gameWindowLock.IsChecked;
+                vp.CanMove = !_gameWindowLock.IsChecked;
                 Engine.Profile.Current.GameWindowLock = _gameWindowLock.IsChecked;
             }
+
+            if (_gameWindowFullsize.IsChecked && (gameWindowPositionX != -5 || gameWindowPositionY != -5))
+            {
+                if (Engine.Profile.Current.GameWindowFullSize == _gameWindowFullsize.IsChecked)
+                    _gameWindowFullsize.IsChecked = false;
+            }
             
-            if (_gameWindowFullsize.IsChecked != Engine.Profile.Current.GameWindowFullSize)
+            if (Engine.Profile.Current.GameWindowFullSize != _gameWindowFullsize.IsChecked)
             {
                 Point n, loc;
-                WorldViewportGump e = Engine.UI.GetByLocalSerial<WorldViewportGump>();
 
                 if (_gameWindowFullsize.IsChecked)
                 {
-                    n = e.ResizeWindow(new Point(Engine.WindowWidth, Engine.WindowHeight));
-                    loc = e.Location = new Point(-5, -5);
+                    n = vp.ResizeWindow(new Point(Engine.WindowWidth, Engine.WindowHeight));
+                    loc = Engine.Profile.Current.GameWindowPosition = vp.Location = new Point(-5, -5);
                 }
                 else
                 {
-                    n = e.ResizeWindow(new Point(600, 480));
-                    loc = e.Location = new Point(20, 20);
+                    n = vp.ResizeWindow(new Point(600, 480));
+                    loc = vp.Location = Engine.Profile.Current.GameWindowPosition = new Point(20, 20);
                 }
 
                 _gameWindowPositionX.Text = loc.X.ToString();
                 _gameWindowPositionY.Text = loc.Y.ToString();
                 _gameWindowWidth.Text = n.X.ToString();
                 _gameWindowHeight.Text = n.Y.ToString();
+
                 Engine.Profile.Current.GameWindowFullSize = _gameWindowFullsize.IsChecked;
             }
 
@@ -944,7 +985,6 @@ namespace ClassicUO.Game.UI.Gumps
                 World.Light.Overall = World.Light.RealOverall;
                 World.Light.Personal = World.Light.RealPersonal;
             }
-
             
             // fonts
             Engine.Profile.Current.ChatFont = _fontSelectorChat.GetSelectedFont();
@@ -958,9 +998,9 @@ namespace ClassicUO.Game.UI.Gumps
             Engine.Profile.Current.MurdererHue = _murdererColorPickerBox.Hue;
             Engine.Profile.Current.EnabledCriminalActionQuery = _queryBeforAttackCheckbox.IsChecked;
 
-
             // macros
             Engine.Profile.Current.Macros = Engine.SceneManager.GetScene<GameScene>().Macros.GetAllMacros().ToArray();
+
         }
 
         internal void UpdateVideo()

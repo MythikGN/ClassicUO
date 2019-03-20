@@ -314,13 +314,22 @@ namespace ClassicUO.Game.GameObjects
 
             if (_overHeads != null)
             {
-                foreach (TextOverhead textOverhead in _overHeads)
-                {
-                    textOverhead.Dispose();
-                }
-                _overHeads.Clear();
+                while (_overHeads.Count != 0)
+                    _overHeads.RemoveFromBack().Dispose();
+                _overHeads = null;
             }
 
+            if (Left != null)
+            {
+                Left = null;
+            }
+
+            if (Right != null)
+            {
+                Right = null;
+            }
+
+            Texture = null;
 
             GC.SuppressFinalize(this);
         }
