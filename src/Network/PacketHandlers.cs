@@ -36,6 +36,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+
+using ClassicUO.Utility.Platforms;
+
 using Multi = ClassicUO.Game.GameObjects.Multi;
 
 namespace ClassicUO.Network
@@ -399,6 +402,14 @@ namespace ClassicUO.Network
             }
 
             mobile.ProcessDelta();
+
+
+            if (mobile == World.Player)
+            {
+                UoAssist.SignalHits();
+                UoAssist.SignalStamina();
+                UoAssist.SignalMana();
+            }
         }
 
         private static void FollowR(Packet p)
@@ -864,8 +875,17 @@ namespace ClassicUO.Network
                 }
                 else
                 {
+
+                    if (!Engine.UI.GetGumpCachePosition(item, out Point location))
+                    {
+                        location = new Point(64, 64);
+                    }
+
                     Engine.UI.GetByLocalSerial<ContainerGump>(serial)?.Dispose();
-                    Engine.UI.Add(new ContainerGump(item, graphic));
+                    Engine.UI.Add(new ContainerGump(item, graphic)
+                    {
+                        Location = location
+                    });
                 }
             }
 
@@ -1060,6 +1080,13 @@ namespace ClassicUO.Network
             mobile.StaminaMax = p.ReadUShort();
             mobile.Stamina = p.ReadUShort();
             mobile.ProcessDelta();
+
+            if (mobile == World.Player)
+            {
+                UoAssist.SignalHits();
+                UoAssist.SignalStamina();
+                UoAssist.SignalMana();
+            }
         }
 
         private static void EquipItem(Packet p)
@@ -2124,6 +2151,11 @@ namespace ClassicUO.Network
             mobile.HitsMax = p.ReadUShort();
             mobile.Hits = p.ReadUShort();
             mobile.ProcessDelta();
+
+            if (mobile == World.Player)
+            {
+                UoAssist.SignalHits();
+            }
         }
 
         private static void UpdateMana(Packet p)
@@ -2134,6 +2166,11 @@ namespace ClassicUO.Network
             mobile.ManaMax = p.ReadUShort();
             mobile.Mana = p.ReadUShort();
             mobile.ProcessDelta();
+
+            if (mobile == World.Player)
+            {
+                UoAssist.SignalMana();
+            }
         }
 
         private static void UpdateStamina(Packet p)
@@ -2144,6 +2181,11 @@ namespace ClassicUO.Network
             mobile.StaminaMax = p.ReadUShort();
             mobile.Stamina = p.ReadUShort();
             mobile.ProcessDelta();
+
+            if (mobile == World.Player)
+            {
+                UoAssist.SignalStamina();
+            }
         }
 
         private static void OpenUrl(Packet p)
@@ -3141,8 +3183,16 @@ namespace ClassicUO.Network
                     if (wtfCliloc != 0)
                         wtf = "\n" + FileManager.Cliloc.GetString((int)wtfCliloc);
                     string text = $"<left>{title}{description}{wtf}</left>";
+
+                    if (World.Player.IsBuffIconExists(BuffTable.Table[iconID]))
+                    {
+                        World.Player.RemoveBuff(BuffTable.Table[iconID]);
+                        gump?.RemoveBuff(BuffTable.Table[iconID]);
+                    }
+
                     World.Player.AddBuff(BuffTable.Table[iconID], timer, text);
                     gump?.AddBuff(BuffTable.Table[iconID]);
+                    
                 }
                 else
                 {
