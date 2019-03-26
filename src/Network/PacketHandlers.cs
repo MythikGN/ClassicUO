@@ -875,17 +875,8 @@ namespace ClassicUO.Network
                 }
                 else
                 {
-
-                    if (!Engine.UI.GetGumpCachePosition(item, out Point location))
-                    {
-                        location = new Point(64, 64);
-                    }
-
                     Engine.UI.GetByLocalSerial<ContainerGump>(serial)?.Dispose();
-                    Engine.UI.Add(new ContainerGump(item, graphic)
-                    {
-                        Location = location
-                    });
+                    Engine.UI.Add(new ContainerGump(item, graphic));
                 }
             }
 
@@ -3184,15 +3175,8 @@ namespace ClassicUO.Network
                         wtf = "\n" + FileManager.Cliloc.GetString((int)wtfCliloc);
                     string text = $"<left>{title}{description}{wtf}</left>";
 
-                    if (World.Player.IsBuffIconExists(BuffTable.Table[iconID]))
-                    {
-                        World.Player.RemoveBuff(BuffTable.Table[iconID]);
-                        gump?.RemoveBuff(BuffTable.Table[iconID]);
-                    }
-
                     World.Player.AddBuff(BuffTable.Table[iconID], timer, text);
-                    gump?.AddBuff(BuffTable.Table[iconID]);
-                    
+                    gump?.AddBuff(BuffTable.Table[iconID]);                   
                 }
                 else
                 {
