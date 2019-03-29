@@ -48,12 +48,8 @@ using ClassicUO.Utility;
 using ClassicUO.Utility.Logging;
 using ClassicUO.Utility.Platforms;
 
-using Ionic.Zip;
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
-using Octokit;
 
 using SDL2;
 
@@ -282,8 +278,11 @@ namespace ClassicUO
         {
             Configure();
 
-            /* if (CheckUpdate(args))
-                return; */
+            //new Updater()
+            //   .Check();
+
+            if (CheckUpdate(args))
+                return;
 
             using (_engine = new Engine(ArgsParser(args)))
             {
@@ -332,7 +331,8 @@ namespace ClassicUO
 
                 }
               
-                File.SetAttributes(Path.GetDirectoryName(path), FileAttributes.Normal);
+
+                //File.SetAttributes(Path.GetDirectoryName(path), FileAttributes.Normal);
               
                 foreach (string file in Directory.EnumerateFiles(ExePath, "*", SearchOption.AllDirectories))
                 {
@@ -341,12 +341,14 @@ namespace ClassicUO
                     Console.WriteLine("COPIED {0} over {1}", file, sub);
                 }
 
+                string prefix = Environment.OSVersion.Platform == PlatformID.MacOSX || Environment.OSVersion.Platform == PlatformID.Unix ? "mono " : string.Empty;
+
                 new Process
                 {
                     StartInfo =
                     {
                         WorkingDirectory = path,
-                        FileName = Path.Combine(path, "ClassicUO.exe"),
+                        FileName = prefix + Path.Combine(path, "ClassicUO.exe"),
                         UseShellExecute = false,
                         Arguments =
                             $"--source \"{ExePath}\" --pid {Process.GetCurrentProcess().Id} --action cleanup"
@@ -498,17 +500,21 @@ namespace ClassicUO
 #if !DEBUG
             AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
             {
-                string msg = e.ExceptionObject.ToString();
-                Log.Message(LogTypes.Panic, msg);
+                StringBuilder sb = new StringBuilder();
+                sb.AppendFormat("ClassicUO - v{0}\nOS: {1} {2}\n\n", Version, Environment.OSVersion.Platform, Environment.Is64BitOperatingSystem ? "x64" : "x86");
+                sb.AppendFormat("Exception:\n{0}", e.ExceptionObject);
+
+                Log.Message(LogTypes.Panic, e.ExceptionObject.ToString());
                 string path = Path.Combine(ExePath, "Logs");
 
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
 
                 using (LogFile crashfile = new LogFile(path, "crash.txt"))
-                    crashfile.WriteAsync(msg).RunSynchronously();
+                    crashfile.WriteAsync(sb.ToString()).RunSynchronously();
             };
 #endif
+
             // We can use the mono's dllmap feature, but 99% of people use VS to compile.
             if (Environment.OSVersion.Platform != PlatformID.MacOSX && Environment.OSVersion.Platform != PlatformID.Unix)
             {
@@ -596,7 +602,8 @@ namespace ClassicUO
 
             Log.Message(LogTypes.Trace, "Loading plugins...");
             Log.PushIndent();
-            Plugin.Create(@"./Assistant/Razor.dll");
+            foreach(var p in GlobalSettings.Plugins)
+                Plugin.Create(p);
             Log.Message(LogTypes.Trace, "Done!");
             Log.PopIndent();
 

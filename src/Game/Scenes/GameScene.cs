@@ -40,8 +40,6 @@ using ClassicUO.Utility.Logging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-using System.Diagnostics;
-
 namespace ClassicUO.Game.Scenes
 {
     internal partial class GameScene : Scene
@@ -179,7 +177,7 @@ namespace ClassicUO.Game.Scenes
             _viewPortGump.MouseOver += OnMouseMove;
             _viewPortGump.MouseWheel += (sender, e) =>
             {
-                if (!Engine.Profile.Current.EnableScaleZoom)
+                if (!Engine.Profile.Current.EnableScaleZoom || !Input.Keyboard.Ctrl)
                     return;
 
                 if (e.Direction == MouseEvent.WheelScrollDown)
@@ -199,9 +197,16 @@ namespace ClassicUO.Game.Scenes
 
             Chat.Message += ChatOnMessage;
 
-            Scale = (Engine.Profile.Current.SaveScaleAfterClose) ? Engine.Profile.Current.ScaleZoom : 1f;
+            if (!Engine.Profile.Current.EnableScaleZoom || !Engine.Profile.Current.SaveScaleAfterClose)
+                Scale = 1f;
+            else
+                Scale = Engine.Profile.Current.ScaleZoom;
+
+            Engine.Profile.Current.RestoreScaleValue = Engine.Profile.Current.ScaleZoom = Scale;
 
             Plugin.OnConnected();
+
+            //Engine.UI.Add(new CounterBarGump());
         }
 
         private void ChatOnMessage(object sender, UOMessageEventArgs e)
