@@ -39,7 +39,7 @@ using IUpdateable = ClassicUO.Interfaces.IUpdateable;
 
 namespace ClassicUO.Game.Managers
 {
-    internal class OverheadManager : IUpdateable, IDisposable
+    internal class OverheadManager : IUpdateable
     {
         private readonly Dictionary<GameObject, Deque<DamageOverhead>> _damageOverheads = new Dictionary<GameObject, Deque<DamageOverhead>>();
         private readonly List<GameObject> _toRemoveDamages = new List<GameObject>();
@@ -51,19 +51,13 @@ namespace ClassicUO.Game.Managers
         {
             if (_firstNode != null)
             {
-                //if (_edge == null)
-                //{
-                //    _edge = new Texture2D(batcher.GraphicsDevice, 1, 1);
-                //    _edge.SetData(new Color[] { Color.LightBlue });
-                //}
-
                 int skip = 0;
 
                 for (TextOverhead overhead = _firstNode; overhead != null; overhead = (TextOverhead) overhead.Right)
                 {
                     GameObject owner = overhead.Parent;
 
-                    if (owner == null || overhead.IsDisposed || owner.IsDisposed)
+                    if (owner == null || overhead.IsDestroyed || owner.IsDestroyed)
                     {
                         continue;
                     }
@@ -72,14 +66,10 @@ namespace ClassicUO.Game.Managers
 
                     if (owner is Mobile m)
                     {
-                        GetAnimationDimensions(m, 0xFF, out int height, out int centerY);
+                        GetAnimationDimensions(m, 0xFF, out int centerX, out int centerY, out int width, out int height);
 
-                        position = new Vector3
-                        {
-                            X = position.X + m.Offset.X,
-                            Y = position.Y + (m.Offset.Y - m.Offset.Z) - (height + centerY + 8),
-                            Z = position.Z
-                        };
+                        position.X = position.X + m.Offset.X;
+                        position.Y = position.Y + (m.Offset.Y - m.Offset.Z) - (height + centerY + 8);
                     }
                     else if (owner.Texture != null)
                         position.Y -= owner.Texture.Height / 2;
@@ -95,14 +85,10 @@ namespace ClassicUO.Game.Managers
 
                             if (ov.Parent is Mobile mm)
                             {
-                                GetAnimationDimensions(mm, 0xFF, out int height, out int centerY);
+                                GetAnimationDimensions(mm, 0xFF, out int centerX, out int centerY, out int width, out int height);
 
-                                pos2 = new Vector3
-                                {
-                                    X = pos2.X + mm.Offset.X,
-                                    Y = pos2.Y + (mm.Offset.Y - mm.Offset.Z) - (height + centerY + 8),
-                                    Z = pos2.Z
-                                };
+                                pos2.X = pos2.X + mm.Offset.X;
+                                pos2.Y = pos2.Y + (mm.Offset.Y - mm.Offset.Z) - (height + centerY + 8);
                             }
                             else if (ov.Parent.Texture != null)
                                 pos2.Y -= ov.Parent.Texture.Height / 2;
@@ -133,12 +119,8 @@ namespace ClassicUO.Game.Managers
                     else
                         skip--;
 
+
                     overhead.Draw(batcher, position, list);
-
-                 
-
-                    //batcher.DrawRectangle(_edge, current, Vector3.Zero);
-
                 }
 
 
@@ -159,9 +141,6 @@ namespace ClassicUO.Game.Managers
 
             }
         }
-
-        //private Texture2D _edge;
-
 
         public void AddOverhead(TextOverhead overhead)
         {
@@ -195,7 +174,7 @@ namespace ClassicUO.Game.Managers
                 var st = _staticToUpdate[i];
                 st.Update(totalMS, frameMS);
 
-                if (st.IsDisposed)
+                if (st.IsDestroyed)
                     _staticToUpdate.RemoveAt(i--);
             }
 
@@ -212,7 +191,7 @@ namespace ClassicUO.Game.Managers
         }
 
 
-        private static void GetAnimationDimensions(Mobile mobile, byte frameIndex, out int height, out int centerY)
+        private static void GetAnimationDimensions(Mobile mobile, byte frameIndex, out int centerX, out int centerY, out int width, out int height)
         {
             byte dir = 0 & 0x7F;
             byte animGroup = 0;
@@ -221,36 +200,33 @@ namespace ClassicUO.Game.Managers
 
             if (frameIndex == 0xFF)
                 frameIndex = (byte)mobile.AnimIndex;
-            FileManager.Animations.GetAnimationDimensions(frameIndex, mobile.GetGraphicForAnimation(), dir, animGroup, out int x, out centerY, out int w, out height);
-            if (x == 0 && centerY == 0 && w == 0 && height == 0) height = mobile.IsMounted ? 100 : 60;
+            FileManager.Animations.GetAnimationDimensions(frameIndex, mobile.GetGraphicForAnimation(), dir, animGroup, out centerX, out centerY, out width, out height);
+            if (centerX == 0 && centerY == 0 && width == 0 && height == 0) height = mobile.IsMounted ? 100 : 60;
         }
 
         public bool Draw(Batcher2D batcher, MouseOverList list, Point offset)
         {
             DrawTextOverheads(batcher, list);
 
+            Vector3 position = Vector3.Zero;
+
             foreach (KeyValuePair<GameObject, Deque<DamageOverhead>> pair in _damageOverheads)
             {
                 Mobile parent = (Mobile)pair.Key;
-                var deque = pair.Value;
+                Deque<DamageOverhead> deque = pair.Value;
 
-                Vector3 position = Vector3.Zero;
        
                 position.X = parent.ScreenPosition.X - offset.X - 22;
                 position.Y = parent.ScreenPosition.Y - offset.Y - 22;
 
                 if (parent is Mobile m)
                 {
-                    GetAnimationDimensions(m, 0xFF, out int height, out int centerY);
+                    GetAnimationDimensions(m, 0xFF, out int centerX, out int centerY, out int width, out int height);
 
-                    position = new Vector3
-                    {
-                        X = position.X + m.Offset.X,
-                        Y = position.Y + (m.Offset.Y - m.Offset.Z) - (height + centerY + 8),
-                        Z = position.Z
-                    };
+                    position.X = position.X + m.Offset.X;
+                    position.Y = position.Y + (m.Offset.Y - m.Offset.Z) - (height + centerY + 8);
                 }
- 
+
                 foreach (DamageOverhead damageOverhead in deque)                  
                     damageOverhead.Draw(batcher, position, list);              
             }
@@ -272,7 +248,7 @@ namespace ClassicUO.Game.Managers
                     DamageOverhead obj = deque[i];
                     obj.Update(totalMS, frameMS);
 
-                    if (obj.IsDisposed)
+                    if (obj.IsDestroyed)
                     {                       
                         deque.RemoveAt(i--);
                     }
@@ -307,13 +283,13 @@ namespace ClassicUO.Game.Managers
                 deque.RemoveFromBack();
         }
 
-        public void Dispose()
+        public void Clear()
         {
             foreach (var deque in _damageOverheads.Values)
             {
                 foreach (DamageOverhead damageOverhead in deque)
                 {
-                    damageOverhead.Dispose();
+                    damageOverhead.Destroy();
                 }
             }
 
@@ -341,7 +317,7 @@ namespace ClassicUO.Game.Managers
             {
                 GameObject temp = last.Right;
 
-                last.Dispose();
+                last.Destroy();
 
                 last.Left = null;
                 last.Right = null;
@@ -351,7 +327,7 @@ namespace ClassicUO.Game.Managers
 
             _firstNode = null;
 
-            _staticToUpdate.ForEach( s=> s.Dispose());
+            _staticToUpdate.ForEach( s=> s.Destroy());
             _staticToUpdate.Clear();
         }
     }
