@@ -53,7 +53,7 @@ namespace ClassicUO.Network
 {
     internal unsafe class Plugin
     {
-        [MarshalAs(UnmanagedType.FunctionPtr)] private OnCastSpell _castSpell;
+       /* [MarshalAs(UnmanagedType.FunctionPtr)] private OnCastSpell _castSpell;
         [MarshalAs(UnmanagedType.FunctionPtr)] private OnDrawCmdList _draw_cmd_list;
         [MarshalAs(UnmanagedType.FunctionPtr)] private OnGetCliloc _get_cliloc;
         [MarshalAs(UnmanagedType.FunctionPtr)] private OnGetStaticData _get_static_data;
@@ -80,7 +80,7 @@ namespace ClassicUO.Network
         private readonly Dictionary<IntPtr, GraphicsResource> _resources = new Dictionary<IntPtr, GraphicsResource>();
         [MarshalAs(UnmanagedType.FunctionPtr)] private OnSetTitle _setTitle;
         [MarshalAs(UnmanagedType.FunctionPtr)] private OnTick _tick;
-
+*/
         private Plugin(string path)
         {
             PluginPath = path;
@@ -130,7 +130,7 @@ namespace ClassicUO.Network
 
         public void Load()
         {
-            _recv = OnPluginRecv;
+         /*   _recv = OnPluginRecv;
             _send = OnPluginSend;
             _recv_new = OnPluginRecv_new;
             _send_new = OnPluginSend_new;
@@ -330,6 +330,7 @@ namespace ClassicUO.Network
             IsValid = true;
 
             _onInitialize?.Invoke();
+            */
         }
 
         private static string GetUOFilePath()
@@ -397,13 +398,13 @@ namespace ClassicUO.Network
             return buffer != null;
         }
 
-        private static void GetStaticImage(ushort g, ref ArtInfo info)
+       /* private static void GetStaticImage(ushort g, ref ArtInfo info)
         {
             ArtLoader.Instance.TryGetEntryInfo(g, out long address, out long size, out long compressedsize);
             info.Address = address;
             info.Size = size;
             info.CompressedSize = compressedsize;
-        }
+        }*/
 
         private static bool RequestMove(int dir, bool run)
         {
@@ -430,7 +431,7 @@ namespace ClassicUO.Network
         {
             foreach (Plugin t in Plugins)
             {
-                t._tick?.Invoke();
+                //t._tick?.Invoke();
             }
         }
 
@@ -439,7 +440,7 @@ namespace ClassicUO.Network
         {
             bool result = true;
 
-            foreach (Plugin plugin in Plugins)
+           /* foreach (Plugin plugin in Plugins)
             {
                 if (plugin._onRecv_new != null)
                 {
@@ -453,7 +454,7 @@ namespace ClassicUO.Network
                     result = false;
                 }
             }
-
+*/
             return result;
         }
 
@@ -461,7 +462,7 @@ namespace ClassicUO.Network
         {
             bool result = true;
 
-            foreach (Plugin plugin in Plugins)
+         /*   foreach (Plugin plugin in Plugins)
             {
                 if (plugin._onSend_new != null)
                 {
@@ -475,7 +476,7 @@ namespace ClassicUO.Network
                     result = false;
                 }
             }
-
+*/
             return result;
         }
 
@@ -483,7 +484,7 @@ namespace ClassicUO.Network
         {
             for (int i = 0; i < Plugins.Count; i++)
             {
-                Plugins[i]._onClientClose?.Invoke();
+               // Plugins[i]._onClientClose?.Invoke();
 
                 Plugins.RemoveAt(i--);
             }
@@ -493,7 +494,7 @@ namespace ClassicUO.Network
         {
             foreach (Plugin t in Plugins)
             {
-                t._onFocusGained?.Invoke();
+               // t._onFocusGained?.Invoke();
             }
         }
 
@@ -501,7 +502,7 @@ namespace ClassicUO.Network
         {
             foreach (Plugin t in Plugins)
             {
-                t._onFocusLost?.Invoke();
+               // t._onFocusLost?.Invoke();
             }
         }
 
@@ -510,7 +511,7 @@ namespace ClassicUO.Network
         {
             foreach (Plugin t in Plugins)
             {
-                t._onConnected?.Invoke();
+              //  t._onConnected?.Invoke();
             }
         }
 
@@ -518,7 +519,7 @@ namespace ClassicUO.Network
         {
             foreach (Plugin t in Plugins)
             {
-                t._onDisconnected?.Invoke();
+                //t._onDisconnected?.Invoke();
             }
         }
 
@@ -531,14 +532,14 @@ namespace ClassicUO.Network
 
             bool result = true;
 
-            foreach (Plugin plugin in Plugins)
+          /*  foreach (Plugin plugin in Plugins)
             {
                 if (plugin._onHotkeyPressed != null && !plugin._onHotkeyPressed(key, mod, ispressed))
                 {
                     result = false;
                 }
             }
-
+*/
             return result;
         }
 
@@ -546,7 +547,7 @@ namespace ClassicUO.Network
         {
             foreach (Plugin plugin in Plugins)
             {
-                plugin._onMouse?.Invoke(button, wheel);
+               // plugin._onMouse?.Invoke(button, wheel);
             }
         }
 
@@ -554,7 +555,7 @@ namespace ClassicUO.Network
         {
             foreach (Plugin plugin in Plugins)
             {
-                if (plugin._draw_cmd_list != null)
+               /* if (plugin._draw_cmd_list != null)
                 {
                     int cmd_count = 0;
                     plugin._draw_cmd_list.Invoke(out IntPtr cmdlist, ref cmd_count);
@@ -563,7 +564,7 @@ namespace ClassicUO.Network
                     {
                         plugin.HandleCmdList(device, cmdlist, cmd_count, plugin._resources);
                     }
-                }
+                }*/
             }
         }
 
@@ -573,7 +574,7 @@ namespace ClassicUO.Network
 
             foreach (Plugin plugin in Plugins)
             {
-                result |= plugin._on_wnd_proc?.Invoke(e) ?? 0;
+              //  result |= plugin._on_wnd_proc?.Invoke(e) ?? 0;
             }
 
             return result;
@@ -588,7 +589,7 @@ namespace ClassicUO.Network
                     // TODO: need fixed on razor side
                     // if you quick entry (0.5-1 sec after start, without razor window loaded) - breaks CUO.
                     // With this fix - the razor does not work, but client does not crashed.
-                    plugin._onUpdatePlayerPosition?.Invoke(x, y, z);
+                  //  plugin._onUpdatePlayerPosition?.Invoke(x, y, z);
                 }
                 catch
                 {

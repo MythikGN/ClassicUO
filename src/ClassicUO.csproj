@@ -1,15 +1,29 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <ApplicationIcon>cuoicon.ico</ApplicationIcon>
+    <MonoRuntimeDebuggerEnabled Condition="'$(Configuration)'=='Debug'">true</MonoRuntimeDebuggerEnabled>
+    <!-- Bug fix start. Note: "$(MSBuildProjectDirectory)" is a relative path. -->
+    <!--<NetCoreWasmSDKUri>https://unowasmbootstrap.azureedge.net/runtime/dotnet-runtime-wasm-c3c48f8-23980-Release.zip</NetCoreWasmSDKUri>
+    <WasmShellILLinkerEnabled>false</WasmShellILLinkerEnabled>
+    <MonoWasmRuntimeConfiguration>threads-release</MonoWasmRuntimeConfiguration>
+
+     Bug fix end. -->
+    <DefineConstants>$(DefineConstants);__WASM__;TRACE;DEBUG</DefineConstants>
+    <DebugType Condition="'$(Configuration)'=='Debug'">portable</DebugType>
+    <DebugSymbols Condition="'$(Configuration)'=='Debug'">true</DebugSymbols>
+
+    <MonoWasmSDKUri>https://unowasmbootstrap.azureedge.net/runtime/mono-wasm-f30f5adfbbb.zip</MonoWasmSDKUri>
+    <MonoWasmAOTSDKUri>https://unowasmbootstrap.azureedge.net/runtime/wasm-release-Linux-f30f5adfbbb07cc4c4ba0add8ccfa35e652d3354.zip</MonoWasmAOTSDKUri>
+    <WasmShellMonoRuntimeExecutionMode>Interpreter</WasmShellMonoRuntimeExecutionMode>
+
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IS_DEV_BUILD)' == 'true'">
-    <OutputType>WinExe</OutputType>
-  </PropertyGroup>
-
+  <ItemGroup>
+    <WasmShellExtraEmccFlags Include="-v -s MAX_WEBGL_VERSION=2" />
+  </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -21,7 +35,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputPath>$(ProjectDir)..\bin\Debug\</OutputPath>
+    <OutputPath>bin/Debug/netstandard2.0/</OutputPath>
   </PropertyGroup>
 
 
@@ -44,6 +58,10 @@
     <Description>An open source implementation of the Ultima Online Classic Client.</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Uno.Wasm.Bootstrap" Version="2.0.2-test.8" />
+    <PackageReference Include="Uno.Wasm.Bootstrap.DevServer" Version="1.0.0" PrivateAssets="all" />
+  </ItemGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>ClassicUO.UnitTests</_Parameter1>
@@ -69,9 +87,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="cuoapi">
-      <HintPath>..\external\api\cuoapi.dll</HintPath>
-    </Reference>
     <Reference Include="System.IO.Compression" />
   </ItemGroup>
 
@@ -122,6 +137,15 @@
     <DataFiles_lib64 Include="$(ProjectDir)..\external\lib64\*.*" />
     <DataFiles_osx Include="$(ProjectDir)..\external\osx\*.*" />
     <DataFiles_vulkan Include="$(ProjectDir)..\external\vulkan\icd.d\*.*" />
+  </ItemGroup>
+
+
+ 
+
+  <ItemGroup>
+    <Content Include="SDL2.a" />
+    <Content Include="FNA3D.a" />
+    <Content Include="libmojoshader.a" />
   </ItemGroup>
 
 

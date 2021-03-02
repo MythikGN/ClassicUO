@@ -47,6 +47,7 @@ namespace ClassicUO.Utility.Platforms
 
         public static void LaunchBrowser(string url)
         {
+            return;
             try
             {
                 if (IsWindows)
@@ -63,9 +64,13 @@ namespace ClassicUO.Utility.Platforms
                 {
                     Process.Start("open", url);
                 }
+                else if(IsLinux)
+                {
+                    //Process.Start("xdg-open", url);
+                }
                 else
                 {
-                    Process.Start("xdg-open", url);
+                    
                 }
             }
             catch (Exception ex)

@@ -62,7 +62,8 @@ namespace ClassicUO
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
             Log.Start(LogTypes.All);
-
+            Console.WriteLine("SDLPlatform: " + SDL.SDL_GetPlatform());
+            Console.WriteLine("SDLPlatform: " + SDL.SDL_GetPlatform());Console.WriteLine("SDLPlatform: " + SDL.SDL_GetPlatform());Console.WriteLine("SDLPlatform: " + SDL.SDL_GetPlatform());
             CUOEnviroment.GameThread = Thread.CurrentThread;
             CUOEnviroment.GameThread.Name = "CUO_MAIN_THREAD";
 
@@ -149,7 +150,7 @@ namespace ClassicUO
                 }
             }
 
-            Settings.GlobalSettings = ConfigurationResolver.Load<Settings>(globalSettingsPath);
+            Settings.GlobalSettings = new Settings();// ConfigurationResolver.Load<Settings>(globalSettingsPath);
             CUOEnviroment.IsOutlands = Settings.GlobalSettings.ShardType == 2;
 
             ReadSettingsFromArgs(args);
@@ -161,12 +162,12 @@ namespace ClassicUO
                 Settings.GlobalSettings.Save();
             }
 
-            if (!CUOEnviroment.IsUnix)
+            /*if (!CUOEnviroment.IsUnix)
             {
                 string libsPath = Path.Combine(CUOEnviroment.ExecutablePath, Environment.Is64BitProcess ? "x64" : "x86");
 
                 SetDllDirectory(libsPath);
-            }
+            }*/
 
 
             if (string.IsNullOrWhiteSpace(Settings.GlobalSettings.UltimaOnlineDirectory))
@@ -185,7 +186,6 @@ namespace ClassicUO
             }
 
             string clientVersionText = Settings.GlobalSettings.ClientVersion;
-
             if (!ClientVersionHelper.IsClientVersionValid(Settings.GlobalSettings.ClientVersion, out ClientVersion clientVersion))
             {
                 Log.Warn($"Client version [{clientVersionText}] is invalid, let's try to read the client.exe");

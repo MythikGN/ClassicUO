@@ -56,7 +56,7 @@ namespace ClassicUO.Configuration
 
         [JsonProperty("profilespath")] public string ProfilesPath { get; set; } = string.Empty;
 
-        [JsonProperty("clientversion")] public string ClientVersion { get; set; } = string.Empty;
+        [JsonProperty("clientversion")] public string ClientVersion { get; set; } = "7.0.20.0";
 
         [JsonProperty("lastcharactername")] public string LastCharacterName { get; set; } = string.Empty;
 
@@ -118,6 +118,7 @@ namespace ClassicUO.Configuration
 
         public void Save()
         {
+            return;
             // Make a copy of the settings object that we will use in the saving process
             string json = this.Encode(true);
 

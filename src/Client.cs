@@ -60,18 +60,19 @@ namespace ClassicUO
         {
             Debug.Assert(Game == null);
 
-            Log.Trace("Running game...");
+            Log.Trace("Running game....");
 
             using (Game = new GameController())
                 //Game = new GameController();
             {
                 // https://github.com/FNA-XNA/FNA/wiki/7:-FNA-Environment-Variables#fna_graphics_enable_highdpi
-                CUOEnviroment.IsHighDPI = Environment.GetEnvironmentVariable("FNA_GRAPHICS_ENABLE_HIGHDPI") == "1";
+               // CUOEnviroment.IsHighDPI = Environment.GetEnvironmentVariable("FNA_GRAPHICS_ENABLE_HIGHDPI") == "1";
 
                 if (CUOEnviroment.IsHighDPI)
                 {
                     Log.Trace("HIGH DPI - ENABLED");
                 }
+                Log.Trace("Game Controller constructed");
 
                 Game.Run();
             }
@@ -81,7 +82,8 @@ namespace ClassicUO
 
         public static void ShowErrorMessage(string msg)
         {
-            SDL.SDL_ShowSimpleMessageBox(SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR, "ERROR", msg, IntPtr.Zero);
+            Console.WriteLine(msg);
+           // SDL.SDL_ShowSimpleMessageBox(SDL.SDL_MessageBoxFlags.SDL_MESSAGEBOX_ERROR, "ERROR", msg, IntPtr.Zero);
         }
 
 
